@@ -1,0 +1,34 @@
+name: Build WSA with Google Play
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをクローン
+        uses: actions/checkout@v3
+
+      - name: 必要なパッケージをインストール
+        run: |
+          sudo apt update
+          sudo apt install -y zip unzip wget git
+
+      - name: WSAのビルド
+        run: |
+          git clone https://github.com/microsoft/WSA.git
+          cd WSA
+          ./build.sh
+
+      - name: Magisk & OpenGApps の適用
+        run: |
+          git clone https://github.com/LSPosed/MagiskOnWSA.git
+          cd MagiskOnWSA
+          ./patch.sh ../WSA/output/system.img
+
+      - name: ビルド成果物をアップロード
+        uses: actions/upload-artifact@v3
+        with:
+          name: WSA-GooglePlay
+          path: ./WSA/output/
